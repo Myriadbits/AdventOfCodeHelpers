@@ -41,15 +41,15 @@
             return base.Move();
         }
 
-        public override bool Move(EDirection direction)
-        {
-            Direction = direction;
-            Position newPos = new Position(X, Y, Direction);
-            newPos.Sum = Sum;
-            newPos.Step = Step;
-            History.Add(newPos);
-            return base.Move();
-        }
+        //public override bool Move(EDirection direction)
+        //{
+        //    Direction = direction;
+        //    Position newPos = new Position(X, Y, Direction);
+        //    newPos.Sum = Sum;
+        //    newPos.Step = Step;
+        //    History.Add(newPos);
+        //    return base.Move();
+        //}
 
         public PositionTracker Split(EDirection newDir)
         {
@@ -60,9 +60,24 @@
             return pt;
         }
 
+        public PositionTracker Split(Position newPos)
+        {
+            PositionTracker pt = new PositionTracker(newPos.X, newPos.Y, newPos.Direction);
+            pt.Sum = Sum;
+            pt.Step = 0;
+            pt.History = new List<Position>(History);
+            pt.History.Add(new PositionTracker(this.X, this.Y, this.Direction));
+            return pt;
+        }
+
         public bool HasVisited(int x, int y)
         {
             return (History.Where(a => a.X == x && a.Y == y).Any());
+        }
+
+        public bool HasVisited(Position pos)
+        {
+            return (History.Where(a => a.X == pos.X && a.Y == pos.Y).Any());
         }
 
         public int DistanceSum 
@@ -71,6 +86,29 @@
             {
                 return X + Y + (History.Count * 9 - Sum);
             }
+        }
+
+        public int WeightPerDirectionSwitch
+        {
+            get
+            {
+                if (History.Count > 0)
+                {
+                    int switches = 0;
+                    EDirection dir = History[0].Direction;
+                    for (int n = 1; n < History.Count; n++)
+                    {
+                        if (dir != History[n].Direction)
+                        {
+                            dir = History[n].Direction;
+                            switches++;
+                        }
+                    }
+                    return History.Count + switches * 1000;
+                }
+                return 0;
+            }
+
         }
 
         public int GetMinX
@@ -186,6 +224,18 @@
                 case EDirection.West: return new Position(Math.Clamp(X - 1, s_minX, s_maxX - 1), Y, direction);
                 default: return new Position(X, Y, EDirection.Unknown);
             }
+        }
+
+        public Position PeekRight()
+        {
+            EDirection direction = GetPerpendicularRight(this.Direction);
+            return PeekMovePosition(direction);
+        }
+
+        public Position PeekLeft()
+        {
+            EDirection direction = GetPerpendicularLeft(this.Direction);
+            return PeekMovePosition(direction);
         }
 
         public EDirection GetPerpendicularRight(EDirection direction)

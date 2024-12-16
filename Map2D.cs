@@ -1,4 +1,6 @@
-﻿namespace AdventOfCodeHelpers
+﻿using AdventOfCodeHelpers;
+
+namespace AdventOfCodeHelpers
 {
     public class Map2D
     {
@@ -88,7 +90,12 @@
         /// <returns></returns>
         public bool IsValue(int x, int y, char ch)
         {
-            return m_data[y][x] == ch;
+            if (x >= 0 && x < this.SizeX &&
+                y >= 0 && y < this.SizeY)
+            {
+                return m_data[y][x] == ch;
+            }
+            return false;
         }
 
         /// <summary>
@@ -104,8 +111,7 @@
         /// <summary>
         /// Returns true if a position contains a value
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
+        /// <param name="pos"></param>
         /// <param name="ch"></param>
         public bool IsPositionValue(Position pos, char ch)
         {
@@ -444,6 +450,200 @@
                 }
             }
             return (area, circumfence, corners);
+        }
+
+        /// <summary>
+        /// Find all paths to the finish
+        /// </summary>
+        /// <param name="startX"></param>
+        /// <param name="startY"></param>
+        /// <param name="startDir"></param>
+        /// <param name="finishX"></param>
+        /// <param name="finishY"></param>
+        /// <param name="freeChar"></param>
+        /// <returns></returns>
+        public List<PositionTracker> FindPaths(Position posStart, Position posFinish, char freeChar = '.')
+        {
+            List<PositionTracker> positions = new List<PositionTracker>();
+            positions.Add(new PositionTracker(posStart.X, posStart.Y, posStart.Direction));
+
+            // Path finding
+            List<PositionTracker> finished = new List<PositionTracker>();
+
+            long[,] visitedValues = new long[this.SizeY, this.SizeX];
+
+            while (positions.Count > 0)
+            {
+                Console.WriteLine($"Paths = {positions.Count}");
+                foreach (PositionTracker pt in positions.ToList())
+                {                    
+                    if (pt.X == posFinish.X && pt.Y == posFinish.Y)
+                    {
+                        pt.Direction = EDirection.Unknown;
+                        finished.Add(pt);
+                        continue;
+                    }
+
+                    if (visitedValues[pt.Y, pt.X] == 0)
+                    {
+                        visitedValues[pt.Y, pt.X] = pt.WeightPerDirectionSwitch;
+                    }
+                    if (visitedValues[pt.Y, pt.X] < pt.WeightPerDirectionSwitch)
+                    {
+                        pt.Direction = EDirection.Unknown;
+                    }
+
+                    Position peekRight = pt.PeekRight();
+                    if (IsPositionValue(peekRight, freeChar) && !pt.HasVisited(peekRight))
+                    {
+                        PositionTracker pt1 = pt.Split(peekRight);
+                        positions.Add(pt1);
+                    }
+
+                    Position peekLeft = pt.PeekLeft();
+                    if (IsPositionValue(peekLeft, freeChar) && !pt.HasVisited(peekLeft))
+                    {
+                        PositionTracker pt1 = pt.Split(peekLeft);
+                        positions.Add(pt1);
+                    }
+
+                    if (IsPositionValue(pt, freeChar))
+                    {
+                        pt.Move();
+                    }
+                    else
+                    {
+                        pt.Direction = EDirection.Unknown;
+                        continue;
+                    }
+
+                    
+                }
+
+                // Remove all unknowns
+                positions.RemoveAll(a => a.Direction == EDirection.Unknown);
+            }
+            return finished;
+        }
+
+        /// <summary>
+        /// Find all paths to the finish
+        /// </summary>
+        /// <param name="startX"></param>
+        /// <param name="startY"></param>
+        /// <param name="startDir"></param>
+        /// <param name="finishX"></param>
+        /// <param name="finishY"></param>
+        /// <param name="freeChar"></param>
+        /// <returns></returns>
+        public List<PositionTracker> FindPaths(Position posStart, Position posFinish, long maxValue, char freeChar = '.')
+        {
+            List<PositionTracker> positions = new List<PositionTracker>();
+            positions.Add(new PositionTracker(posStart.X, posStart.Y, posStart.Direction));
+
+            // Path finding
+            List<PositionTracker> finished = new List<PositionTracker>();
+
+            long[,] visitedValues = new long[this.SizeY, this.SizeX];
+
+            while (positions.Count > 0)
+            {
+                Console.WriteLine($"Paths = {positions.Count}");
+                foreach (PositionTracker pt in positions.ToList())
+                {
+                    if (pt.X == posFinish.X && pt.Y == posFinish.Y)
+                    {
+                        pt.Direction = EDirection.Unknown;
+                        pt.History.Add(pt);
+                        finished.Add(pt);
+                        continue;
+                    }
+
+                    if (visitedValues[pt.Y, pt.X] == 0)
+                    {
+                        visitedValues[pt.Y, pt.X] = pt.WeightPerDirectionSwitch;
+                    }
+                    if (visitedValues[pt.Y, pt.X] < (pt.WeightPerDirectionSwitch - 1000))
+                    {
+                        pt.Direction = EDirection.Unknown;
+                        continue;
+                    }
+
+                    if (pt.WeightPerDirectionSwitch > maxValue)
+                    {
+                        pt.Direction = EDirection.Unknown;
+                        continue;
+                    }
+
+                    Position peekRight = pt.PeekRight();
+                    if (IsPositionValue(peekRight, freeChar) && !pt.HasVisited(peekRight))
+                    {
+                        PositionTracker pt1 = pt.Split(peekRight);
+                        positions.Add(pt1);
+                    }
+
+                    Position peekLeft = pt.PeekLeft();
+                    if (IsPositionValue(peekLeft, freeChar) && !pt.HasVisited(peekLeft))
+                    {
+                        PositionTracker pt1 = pt.Split(peekLeft);
+                        positions.Add(pt1);
+                    }
+
+                    if (IsPositionValue(pt, freeChar))
+                    {
+                        pt.Move();
+                    }
+                    else
+                    {
+                        pt.Direction = EDirection.Unknown;
+                        continue;
+                    }
+                }
+
+                // Remove all unknowns
+                positions.RemoveAll(a => a.Direction == EDirection.Unknown);
+            }
+            return finished;
+        }
+
+        /// <summary>
+        /// Draw a path in the map
+        /// </summary>
+        /// <param name="path"></param>
+        public void DrawPathDirection(PositionTracker path)
+        {
+            foreach(var pos in path.History)
+            {
+                switch (pos.Direction)
+                {
+                    case EDirection.North:
+                        SetInBounds(pos, '^');
+                        break;
+                    case EDirection.South:
+                        SetInBounds(pos, 'v');
+                        break;
+                    case EDirection.East:
+                        SetInBounds(pos, '>');
+                        break;
+                    case EDirection.West:
+                        SetInBounds(pos, '<');
+                        break;
+                    case EDirection.Unknown:
+                        SetInBounds(pos, '+');
+                        break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Draw a path with a specific char
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="ch"></param>
+        public void DrawPath(PositionTracker path, char ch)
+        {
+            foreach (var pos in path.History)
+                SetInBounds(pos, ch);
         }
     }
 }
