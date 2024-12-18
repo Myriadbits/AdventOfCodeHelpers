@@ -144,6 +144,49 @@
         }
     }
 
+    /// <summary>
+    /// Tracker to be used in shortest path algo to track the length
+    /// </summary>
+    public class LengthTracker : Position
+    {
+        public int Length { get; set; }
+
+        public LengthTracker()
+        {
+        }
+
+        public LengthTracker(int x, int y)
+            : base(x, y)
+        {
+            Length = 0;
+        }
+
+        public LengthTracker(int x, int y, EDirection direction)
+            : base(x, y, direction)
+        {
+            Length = 0;
+        }
+
+        public override bool Move()
+        {
+            Length++;
+            return base.Move();
+        }
+
+        public LengthTracker Split(EDirection newDir)
+        {
+            LengthTracker pt = new LengthTracker(X, Y, newDir);
+            pt.Length = Length + 1;
+            return pt;
+        }
+
+        public LengthTracker Split(Position newPos)
+        {
+            LengthTracker pt = new LengthTracker(newPos.X, newPos.Y, newPos.Direction);
+            pt.Length = Length + 1;
+            return pt;
+        }
+    }
 
     public class Position : IComparable<Position>
     {

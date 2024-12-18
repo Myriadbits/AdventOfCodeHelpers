@@ -453,6 +453,165 @@ namespace AdventOfCodeHelpers
         }
 
         /// <summary>
+        /// Find the lengths of all paths to the finish. Find only the lengths, not the paths themselves
+        /// </summary>
+        /// <param name="startX"></param>
+        /// <param name="startY"></param>
+        /// <param name="startDir"></param>
+        /// <param name="finishX"></param>
+        /// <param name="finishY"></param>
+        /// <param name="freeChar"></param>
+        /// <returns></returns>
+        public List<LengthTracker> FindShortestPathsLengthOnly(Position posStart, Position posFinish, char freeChar = '.')
+        {
+            List<LengthTracker> positions = new List<LengthTracker>();
+            positions.Add(new LengthTracker(posStart.X, posStart.Y, posStart.Direction));
+
+            List<LengthTracker> finished = new List<LengthTracker>();
+
+            long[,] shortestValues = new long[this.SizeY, this.SizeX];
+            while (positions.Count > 0)
+            {
+                //Console.WriteLine($"Positions: {positions.Count}");                
+                foreach (LengthTracker pt in positions.ToList())
+                {
+                    if (pt.X == posFinish.X && pt.Y == posFinish.Y)
+                    {
+                        pt.Direction = EDirection.Unknown;
+                        finished.Add(pt);
+                        continue;
+                    }
+
+                    if (shortestValues[pt.Y, pt.X] == 0)
+                    {
+                        shortestValues[pt.Y, pt.X] = pt.Length;
+                    }
+                    if (shortestValues[pt.Y, pt.X] < pt.Length)
+                    {
+                        // Path is longer than a previous path, destroy this path
+                        pt.Direction = EDirection.Unknown;
+                        continue;
+                    }
+
+                    Position peekRight = pt.PeekRight();
+                    if (IsPositionValue(peekRight, freeChar))
+                    {
+                        LengthTracker pt1 = pt.Split(peekRight);
+                        if (!positions.Exists(a => a.X == pt1.X && a.Y == pt1.Y)) // Only add the point when it is not yet present
+                        {
+                            positions.Add(pt1);
+                        }
+                    }
+
+                    Position peekLeft = pt.PeekLeft();
+                    if (IsPositionValue(peekLeft, freeChar))
+                    {
+                        LengthTracker pt1 = pt.Split(peekLeft);
+                        if (!positions.Exists(a => a.X == pt1.X && a.Y == pt1.Y)) // Only add the point when it is not yet present
+                        {
+                            positions.Add(pt1);
+                        }
+                    }
+
+                    Position peekMove = pt.PeekMovePosition();
+                    if (IsPositionValue(peekMove, freeChar))
+                    {
+                        pt.Move();
+                    }
+                    else
+                    {
+                        // Moving outside field => destroy path
+                        pt.Direction = EDirection.Unknown;
+                        continue;
+                    }
+                }
+
+                // Destroy all unknowns
+                positions.RemoveAll(a => a.Direction == EDirection.Unknown);
+            }
+            return finished;
+        }
+
+        /// <summary>
+        /// Find all paths to the finish
+        /// </summary>
+        /// <param name="startX"></param>
+        /// <param name="startY"></param>
+        /// <param name="startDir"></param>
+        /// <param name="finishX"></param>
+        /// <param name="finishY"></param>
+        /// <param name="freeChar"></param>
+        /// <returns></returns>
+        public List<PositionTracker> FindShortestPaths(Position posStart, Position posFinish, char freeChar = '.')
+        {
+            List<PositionTracker> positions = new List<PositionTracker>();
+            positions.Add(new PositionTracker(posStart.X, posStart.Y, posStart.Direction));
+
+            // Path finding
+            List<PositionTracker> finished = new List<PositionTracker>();
+
+            long[,] shortestValues = new long[this.SizeY, this.SizeX];
+            while (positions.Count > 0)
+            {
+                //Console.WriteLine($"Positions: {positions.Count}");                
+                foreach (PositionTracker pt in positions.ToList())
+                {
+                    if (pt.X == posFinish.X && pt.Y == posFinish.Y)
+                    {
+                        pt.Direction = EDirection.Unknown;
+                        finished.Add(pt);
+                        continue;
+                    }
+
+                    if (shortestValues[pt.Y, pt.X] == 0)
+                    {
+                        shortestValues[pt.Y, pt.X] = pt.History.Count;
+                    }
+                    if (shortestValues[pt.Y, pt.X] < pt.History.Count)
+                    {
+                        pt.Direction = EDirection.Unknown;
+                        continue;
+                    }
+
+                    Position peekRight = pt.PeekRight();
+                    if (IsPositionValue(peekRight, freeChar))// && !pt.HasVisited(peekRight))
+                    {
+                        PositionTracker pt1 = pt.Split(peekRight);
+                        if (!positions.Exists(a => a.X == pt1.X && a.Y == pt1.Y)) // Only add the point when it is not yet present
+                        {
+                            positions.Add(pt1);
+                        }
+                    }
+
+                    Position peekLeft = pt.PeekLeft();
+                    if (IsPositionValue(peekLeft, freeChar))// && !pt.HasVisited(peekLeft))
+                    {
+                        PositionTracker pt1 = pt.Split(peekLeft);
+                        if (!positions.Exists(a => a.X == pt1.X && a.Y == pt1.Y)) // Only add the point when it is not yet present
+                        {
+                            positions.Add(pt1);
+                        }
+                    }
+
+                    Position peekMove = pt.PeekMovePosition();
+                    if (IsPositionValue(peekMove, freeChar))
+                    {
+                        pt.Move();
+                    }
+                    else
+                    {
+                        pt.Direction = EDirection.Unknown;
+                        continue;
+                    }
+                }
+
+                // Remove all unknowns
+                positions.RemoveAll(a => a.Direction == EDirection.Unknown);
+            }
+            return finished;
+        }
+
+        /// <summary>
         /// Find all paths to the finish
         /// </summary>
         /// <param name="startX"></param>
