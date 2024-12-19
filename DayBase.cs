@@ -8,11 +8,11 @@ namespace AdventOfCodeHelpers
         public int DayNumber { get; set; }
         protected string m_filePath = string.Empty;
         protected bool m_fShowLog = true;
-        public string Filepath { get { return $"..\\..\\..\\Inputs\\ca{DayNumber}.txt"; } }
-        public string FilepathTest1 { get { return $"..\\..\\..\\Inputs\\ca{DayNumber}_1_test.txt"; } }
-        public string FilepathTest2 { get { return $"..\\..\\..\\Inputs\\ca{DayNumber}_2_test.txt"; } }
-        public string FilepathTest { get { return $"..\\..\\..\\Inputs\\ca{DayNumber}_test.txt"; } }
-        public string GetFilepath(int subNumber) { return $"..\\..\\..\\Inputs\\ca{DayNumber}-{subNumber}.txt"; }
+        public string Filepath { get { return $"..\\..\\..\\Inputs\\ca{DayNumber:00}.txt"; } }
+        public string FilepathTest1 { get { return $"..\\..\\..\\Inputs\\ca{DayNumber:00}_1_test.txt"; } }
+        public string FilepathTest2 { get { return $"..\\..\\..\\Inputs\\ca{DayNumber:00}_2_test.txt"; } }
+        public string FilepathTest { get { return $"..\\..\\..\\Inputs\\ca{DayNumber:00}_test.txt"; } }
+        public string GetFilepath(int subNumber) { return $"..\\..\\..\\Inputs\\ca{DayNumber:00}-{subNumber}.txt"; }
         public Stopwatch Watch { get; set; } = new Stopwatch();
         private int m_subNumber = 0;
 
