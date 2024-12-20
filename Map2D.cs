@@ -542,7 +542,7 @@ namespace AdventOfCodeHelpers
         /// <param name="finishY"></param>
         /// <param name="freeChar"></param>
         /// <returns></returns>
-        public List<PositionTracker> FindShortestPaths(Position posStart, Position posFinish, char freeChar = '.')
+        public List<PositionTracker> FindShortestPathsDirection(Position posStart, Position posFinish, char freeChar = '.')
         {
             List<PositionTracker> positions = new List<PositionTracker>();
             positions.Add(new PositionTracker(posStart.X, posStart.Y, posStart.Direction));
@@ -559,6 +559,8 @@ namespace AdventOfCodeHelpers
                     if (pt.X == posFinish.X && pt.Y == posFinish.Y)
                     {
                         pt.Direction = EDirection.Unknown;
+                        pt.LifeTime = pt.History.Count;
+                        pt.History.Add(pt);
                         finished.Add(pt);
                         continue;
                     }
@@ -713,6 +715,7 @@ namespace AdventOfCodeHelpers
                     if (pt.X == posFinish.X && pt.Y == posFinish.Y)
                     {
                         pt.Direction = EDirection.Unknown;
+                        pt.LifeTime = pt.History.Count;
                         pt.History.Add(pt);
                         finished.Add(pt);
                         continue;

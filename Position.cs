@@ -37,35 +37,27 @@
             Position newPos = new Position(X, Y, Direction);
             newPos.Sum = Sum;
             newPos.Step = Step;
+            newPos.LifeTime = History.Count;
             History.Add(newPos);
             return base.Move();
         }
 
-        //public override bool Move(EDirection direction)
-        //{
-        //    Direction = direction;
-        //    Position newPos = new Position(X, Y, Direction);
-        //    newPos.Sum = Sum;
-        //    newPos.Step = Step;
-        //    History.Add(newPos);
-        //    return base.Move();
-        //}
-
         public PositionTracker Split(EDirection newDir)
         {
             PositionTracker pt = new PositionTracker(X, Y, newDir);
-            pt.Sum = Sum;
+            pt.Sum = Sum + 1;
             pt.Step = 0;
-            pt.History = new List<Position>(History);
+            pt.History = new List<Position>(History); // Copy the history
             return pt;
         }
 
         public PositionTracker Split(Position newPos)
         {
             PositionTracker pt = new PositionTracker(newPos.X, newPos.Y, newPos.Direction);
-            pt.Sum = Sum;
+            pt.Sum = Sum + 1;
             pt.Step = 0;
-            pt.History = new List<Position>(History);
+            pt.History = new List<Position>(History); // Copy the history
+            pt.LifeTime = History.Count;
             pt.History.Add(new PositionTracker(this.X, this.Y, this.Direction));
             return pt;
         }
@@ -220,6 +212,7 @@
         public EDirection Direction { get; set; } = EDirection.Unknown;
         public int Step { get; set; } = 0; // Step increases every time we move in the same direction
         public int Sum { get; set; } = 0;
+        public int LifeTime { get; set; } = 0; // Lifetime of this position
 
         private static int s_minX = int.MinValue;
         private static int s_minY = int.MinValue;
