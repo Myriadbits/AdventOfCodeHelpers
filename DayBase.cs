@@ -67,6 +67,27 @@ namespace AdventOfCodeHelpers
             }
         }
 
+        /// <summary>
+        /// Read numbers from a single line from the data file separated by spaces
+        /// </summary>
+        /// <returns></returns>
+        public List<long> ReadNumbers()
+        {
+            List<string> lines = System.IO.File.ReadLines(m_filePath).ToList();
+            string line = lines[0].Trim();
+            return line.Split(' ').Select(a => long.Parse(a)).ToList();
+        }
+
+        /// <summary>
+        /// Read file containing a single long number per line
+        /// </summary>
+        /// <returns></returns>
+        public List<long> ReadNumberPerLine()
+        {
+            List<string> lines = System.IO.File.ReadLines(m_filePath).ToList();            
+            return lines.Select(a => long.Parse(a)).ToList();
+        }
+
         public void LogAnswer(int subtest, string message)
         {
             string answer = $"ANSWER = {message} (in {Watch.ElapsedMilliseconds} ms)";
